@@ -1,24 +1,75 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
-	"os"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"reflect"
+	"strconv"
+	"strings"
+
+	"github.com/BurntSushi/toml"
 )
 
+type Config struct {
+	URL     string  `toml:"url"`
+	GQParam GQParam `toml:"gq_param"`
+}
+
+type GQParam struct {
+	DiskPath string `toml:"disk_path"`
+	FilePath string `toml:"file_path"`
+	Num      int    `toml:"num"`
+}
+
+func run() error {
+	var config Config
+	_, err := toml.DecodeFile("./config.toml", &config)
+	if err != nil {
+		return err
+	}
+
+	query, err := createQuery(config.GQParam)
+	if err != nil {
+		return err
+	}
+
+	postBody := fmt.Sprintf(`{"query": %s}`, strconv.QuoteToASCII(query))
+
+	log.Println(postBody)
+	resp, err := http.Post(config.URL, "application/json", strings.NewReader(postBody))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(body))
+	return nil
+}
+
+func createQuery(param GQParam) (string, error) {
+	tmpl, err := template.ParseFiles("./template/template.json")
+	if err != nil {
+		return "", err
+	}
+
+	var b bytes.Buffer
+	tmpl.Execute(&b, param)
+
+	return b.String(), nil
+}
+
 func main() {
-	fmt.Println("vim-go")
-	var prof Prof
-	b, _ := json.Marshal(prof)
-	sjson := string(b)
-	fmt.Println(sjson)
-
-	params := make(map[string]string)
-	params["path"] = os.Getenv("HOME")
-
-	t := reflect.TypeOf(prof)
-	recursive(t)
+	if err := run(); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func recursive(t reflect.Type) {

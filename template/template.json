@@ -1,0 +1,27 @@
+{	
+	cpu {
+		cores {
+			percent
+		}
+		model
+		model_name
+		cache_size
+	}
+	disk(path: "{{ .DiskPath }}" ) {
+		io {
+			read_count
+		}
+		usage {
+			path
+			total
+			free
+			used
+			used_percent
+		}
+	}
+  file(path: "{{ .FilePath }}" , num: {{ .Num }} ) {
+    name
+    updated_time
+    content
+  }
+}
