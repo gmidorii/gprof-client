@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"reflect"
@@ -46,11 +47,14 @@ func run() error {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	decoder := json.NewDecoder(resp.Body)
+	var prof Prof
+	err = decoder.Decode(&prof)
+	if err != nil && err != io.EOF {
 		return err
 	}
-	fmt.Println(string(body))
+
+	fmt.Println(prof)
 	return nil
 }
 

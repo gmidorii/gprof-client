@@ -21,11 +21,11 @@ type Prof struct {
 				Used        int     `json:"used"`
 				UsedPercent float64 `json:"used_percent"`
 			} `json:"usage"`
-		} `json:"disk" gq:"disk(path: $path)"`
+		} `json:"disk"`
 		File struct {
 			Content     string `json:"content"`
 			Name        string `json:"name"`
 			UpdatedTime string `json:"updated_time"`
-		} `json:"file" gq:"file(path: $path, num: $num)"`
+		} `json:"file"`
 	} `json:"data"`
 }
