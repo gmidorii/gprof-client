@@ -16,3 +16,7 @@
 # For gprof-client
 config.toml
 gprof-client
+
+# dep
+vendor
+Gopkg.lock
