@@ -55,7 +55,7 @@ func run() error {
 	}
 
 	fmt.Println(prof)
-	return nil
+	return display(prof)
 }
 
 func createQuery(param GQParam) (string, error) {
