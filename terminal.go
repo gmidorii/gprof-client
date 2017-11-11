@@ -7,29 +7,12 @@ import (
 )
 
 func display(prof Prof) error {
-	if err := ui.Init(); err != nil {
-		return err
-	}
-	defer ui.Close()
-
 	gauges := cpuWidget(prof.Data.CPU)
-
-	fmt.Println(gauges)
 	ui.Body.AddRows(
 		ui.NewRow(
 			ui.NewCol(12, 0, gauges...),
 		),
 	)
-
-	ui.Body.Align()
-
-	ui.Render(ui.Body)
-
-	ui.Handle("/sys/kbd/q", func(ui.Event) {
-		ui.StopLoop()
-	})
-
-	ui.Loop()
 	return nil
 }
 

@@ -11,8 +11,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
+	ui "github.com/gizak/termui"
 )
 
 type Config struct {
@@ -33,17 +35,41 @@ func run() error {
 		return err
 	}
 
+	if err := ui.Init(); err != nil {
+		return err
+	}
+	defer ui.Close()
+
+	ui.Handle("/sys/kbd/q", func(ui.Event) {
+		ui.StopLoop()
+	})
+	ui.Handle("/timer/1s", func(e ui.Event) {
+		ui.Body.Align()
+		prof, err := req(config)
+		if err != nil {
+			ui.StopLoop()
+		}
+		if err = display(prof); err != nil {
+			ui.StopLoop()
+		}
+		ui.Render(ui.Body)
+		time.Sleep(1 * time.Second)
+	})
+
+	ui.Loop()
+	return nil
+}
+
+func req(config Config) (Prof, error) {
 	query, err := createQuery(config.GQParam)
 	if err != nil {
-		return err
+		return Prof{}, err
 	}
 
 	postBody := fmt.Sprintf(`{"query": %s}`, strconv.QuoteToASCII(query))
-
-	log.Println(postBody)
 	resp, err := http.Post(config.URL, "application/json", strings.NewReader(postBody))
 	if err != nil {
-		return err
+		return Prof{}, err
 	}
 	defer resp.Body.Close()
 
@@ -51,11 +77,9 @@ func run() error {
 	var prof Prof
 	err = decoder.Decode(&prof)
 	if err != nil && err != io.EOF {
-		return err
+		return Prof{}, err
 	}
-
-	fmt.Println(prof)
-	return display(prof)
+	return prof, nil
 }
 
 func createQuery(param GQParam) (string, error) {
