@@ -15,3 +15,4 @@
 
 # For gprof-client
 config.toml
+gprof-client
