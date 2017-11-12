@@ -16,6 +16,7 @@ import (
 	ui "github.com/gizak/termui"
 	"github.com/midorigreen/gprof-client/prof"
 	"github.com/midorigreen/gprof-client/prof/cpu"
+	"github.com/midorigreen/gprof-client/prof/file"
 )
 
 type Config struct {
@@ -33,6 +34,7 @@ var widgetMap map[string]prof.ProfWidget = map[string]prof.ProfWidget{}
 
 func initWidget() {
 	widgetMap["cpu"] = cpu.CreateWidget()
+	widgetMap["file"] = file.CreateWidget()
 }
 
 func run() error {
@@ -57,6 +59,9 @@ func run() error {
 	ui.Body.AddRows(
 		ui.NewRow(
 			ui.NewCol(12, 0, widgetMap["cpu"].Create(prof)...),
+		),
+		ui.NewRow(
+			ui.NewCol(12, 0, widgetMap["file"].Create(prof)...),
 		),
 	)
 	ui.Render(ui.Body)
