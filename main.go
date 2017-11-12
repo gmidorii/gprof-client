@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -122,16 +121,4 @@ func main() {
 	if err := run(); err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func recursive(t reflect.Type) {
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		fmt.Println(field.Name)
-		fmt.Println(field.Tag.Get("gq"))
-		if field.Type.Kind() == reflect.Struct && field.Type.NumField() > 0 {
-			recursive(field.Type)
-		}
-	}
-
 }
