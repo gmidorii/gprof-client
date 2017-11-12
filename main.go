@@ -28,6 +28,8 @@ type GQParam struct {
 	Num      int    `toml:"num"`
 }
 
+var prof Prof
+
 func run() error {
 	var config Config
 	_, err := toml.DecodeFile("./config.toml", &config)
@@ -40,18 +42,31 @@ func run() error {
 	}
 	defer ui.Close()
 
+	prof, err := req(config)
+	if err != nil {
+		ui.StopLoop()
+	}
+
+	var cpuWidget CPUWidget
+	ui.Body.AddRows(
+		ui.NewRow(
+			ui.NewCol(12, 0, cpuWidget.createCPU(prof)...),
+		),
+	)
+	ui.Render(ui.Body)
+
 	ui.Handle("/sys/kbd/q", func(ui.Event) {
 		ui.StopLoop()
 	})
+
 	ui.Handle("/timer/1s", func(e ui.Event) {
 		ui.Body.Align()
 		prof, err := req(config)
 		if err != nil {
 			ui.StopLoop()
 		}
-		if err = display(prof); err != nil {
-			ui.StopLoop()
-		}
+		cpuWidget.updateCPU(prof)
+
 		ui.Render(ui.Body)
 		time.Sleep(1 * time.Second)
 	})
