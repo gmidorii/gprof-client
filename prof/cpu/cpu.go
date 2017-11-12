@@ -1,18 +1,21 @@
-package main
+package cpu
 
 import (
 	"fmt"
 
 	ui "github.com/gizak/termui"
+	"github.com/midorigreen/gprof-client/prof"
 )
-
-var cpuWidget []ui.GridBufferer
 
 type CPUWidget struct {
 	Widget []ui.GridBufferer
 }
 
-func (c *CPUWidget) updateCPU(prof Prof) {
+func CreateWidget() *CPUWidget {
+	return &CPUWidget{}
+}
+
+func (c *CPUWidget) Update(prof prof.Prof) {
 	cpu := prof.Data.CPU
 	for i := range c.Widget {
 		gauge, ok := c.Widget[i].(*ui.Gauge)
@@ -23,7 +26,7 @@ func (c *CPUWidget) updateCPU(prof Prof) {
 	}
 }
 
-func (c *CPUWidget) createCPU(prof Prof) []ui.GridBufferer {
+func (c *CPUWidget) Create(prof prof.Prof) []ui.GridBufferer {
 	cpu := prof.Data.CPU
 	c.Widget = make([]ui.GridBufferer, len(cpu.Cores))
 	for i, v := range cpu.Cores {

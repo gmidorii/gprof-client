@@ -15,6 +15,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 	ui "github.com/gizak/termui"
+	"github.com/midorigreen/gprof-client/prof"
+	"github.com/midorigreen/gprof-client/prof/cpu"
 )
 
 type Config struct {
@@ -28,7 +30,11 @@ type GQParam struct {
 	Num      int    `toml:"num"`
 }
 
-var prof Prof
+var widgetMap map[string]prof.ProfWidget = map[string]prof.ProfWidget{}
+
+func initWidget() {
+	widgetMap["cpu"] = cpu.CreateWidget()
+}
 
 func run() error {
 	var config Config
@@ -47,10 +53,11 @@ func run() error {
 		ui.StopLoop()
 	}
 
-	var cpuWidget CPUWidget
+	initWidget()
+
 	ui.Body.AddRows(
 		ui.NewRow(
-			ui.NewCol(12, 0, cpuWidget.createCPU(prof)...),
+			ui.NewCol(12, 0, widgetMap["cpu"].Create(prof)...),
 		),
 	)
 	ui.Render(ui.Body)
@@ -65,7 +72,9 @@ func run() error {
 		if err != nil {
 			ui.StopLoop()
 		}
-		cpuWidget.updateCPU(prof)
+		for _, v := range widgetMap {
+			v.Update(prof)
+		}
 
 		ui.Render(ui.Body)
 		time.Sleep(1 * time.Second)
@@ -75,24 +84,24 @@ func run() error {
 	return nil
 }
 
-func req(config Config) (Prof, error) {
+func req(config Config) (prof.Prof, error) {
 	query, err := createQuery(config.GQParam)
 	if err != nil {
-		return Prof{}, err
+		return prof.Prof{}, err
 	}
 
 	postBody := fmt.Sprintf(`{"query": %s}`, strconv.QuoteToASCII(query))
 	resp, err := http.Post(config.URL, "application/json", strings.NewReader(postBody))
 	if err != nil {
-		return Prof{}, err
+		return prof.Prof{}, err
 	}
 	defer resp.Body.Close()
 
 	decoder := json.NewDecoder(resp.Body)
-	var prof Prof
+	var prof prof.Prof
 	err = decoder.Decode(&prof)
 	if err != nil && err != io.EOF {
-		return Prof{}, err
+		return prof, err
 	}
 	return prof, nil
 }

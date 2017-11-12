@@ -1,4 +1,4 @@
-package main
+package prof
 
 type Prof struct {
 	Data Data `json:"data"`
