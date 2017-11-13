@@ -16,6 +16,7 @@ import (
 	ui "github.com/gizak/termui"
 	"github.com/midorigreen/gprof-client/prof"
 	"github.com/midorigreen/gprof-client/prof/cpu"
+	"github.com/midorigreen/gprof-client/prof/disk"
 	"github.com/midorigreen/gprof-client/prof/file"
 )
 
@@ -35,6 +36,7 @@ var widgetMap map[string]prof.ProfWidget = map[string]prof.ProfWidget{}
 func initWidget() {
 	widgetMap["cpu"] = cpu.CreateWidget()
 	widgetMap["file"] = file.CreateWidget()
+	widgetMap["disk"] = disk.CreateWidget()
 }
 
 func run() error {
@@ -61,7 +63,8 @@ func run() error {
 			ui.NewCol(12, 0, widgetMap["cpu"].Create(prof)...),
 		),
 		ui.NewRow(
-			ui.NewCol(12, 0, widgetMap["file"].Create(prof)...),
+			ui.NewCol(6, 0, widgetMap["file"].Create(prof)...),
+			ui.NewCol(6, 0, widgetMap["disk"].Create(prof)...),
 		),
 	)
 	ui.Render(ui.Body)
