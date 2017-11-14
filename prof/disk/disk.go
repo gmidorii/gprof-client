@@ -16,12 +16,13 @@ func CreateWidget() *DiskWidget {
 }
 
 func (d *DiskWidget) Update(prof prof.Prof) {
-	//disk := prof.Data.Disk
-	//bar, ok := d.Widget.(*ui.BarChart)
-	//if !ok {
-	//	return
-	//}
-	//bar.Data = []int{disk.Usage.Total, disk.Usage.Used, disk.Usage.Free}
+	disk := prof.Data.Disk
+	mbar, ok := d.Widget.(*ui.MBarChart)
+	if !ok {
+		return
+	}
+	mbar.Data[0] = []int{mbToGB(disk.Usage.Used), mbToGB(disk.Usage.Total)}
+	mbar.Data[1] = []int{mbToGB(disk.Usage.Free), 0}
 }
 
 func (d *DiskWidget) Create(prof prof.Prof) []ui.GridBufferer {
